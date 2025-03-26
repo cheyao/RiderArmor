@@ -1,15 +1,17 @@
+#include "Grove_Motor_Driver_TB6612FNG.h"
+#include "Ultrasonic.h"
+#include "ICM20600.h"
+#include "Adafruit_NeoPixel.h"
+
 #include <SoftwareSerial.h>
 #include <Wire.h>
 
-#include "Grove_Motor_Driver_TB6612FNG.h"
-#include "Ultrasonic.h"
-
 // Common ports
-constexpr const static inline unsigned int RxD 8;
-constexpr const static inline unsigned int TxD 9;
-constexpr const static inline unsigned int ULTRASONIC_PIN 5;
-constexpr const static inline unsigned int PIN 6;
-constexpr const static inline unsigned int NUMPIXELS 20;
+constexpr const static inline unsigned int RxD = 8;
+constexpr const static inline unsigned int TxD = 9;
+constexpr const static inline unsigned int ULTRASONIC_PIN = 5;
+constexpr const static inline unsigned int NEOPIXEL_PIN = 6;
+constexpr const static inline unsigned int NUMPIXELS = 20;
 
 // Initialize bit-banging serial device
 SoftwareSerial blueToothSerial(RxD, TxD);
@@ -19,7 +21,7 @@ static Ultrasonic ultrasonic(ULTRASONIC_PIN);
 
 static ICM20600 icm20600(true);
 static Adafruit_NeoPixel pixels =
-    Adafruit_NeoPixel(NUMPIXELS, PIN, NEO_GRB + NEO_KHZ800);
+    Adafruit_NeoPixel(NUMPIXELS, NEOPIXEL_PIN);
 
 // And the instance for the motor controller
 static MotorDriver motor;
@@ -49,7 +51,8 @@ void setupBlueToothConnection() {
 }
 
 void setup() {
-    Serial.begin(9600); // Initialize the serial baud rate to 9600
+	// Initialize the serial baud rate to 9600
+    Serial.begin(9600);
 
     // Initalize Motors
     Wire.begin();
@@ -61,25 +64,26 @@ void setup() {
 
     // Accelerometer setup
     icm20600.initialize();
+    icm20600.reset();
     icm20600.setAccAverageSample(ACC_AVERAGE_8);
     icm20600.setAccScaleRange(RANGE_2G);
 
-    // Setup our neopixels - 0 brightness and all green
-    pixels.setBrightness(0);
+    setupBlueToothConnection();
+
+    // Setup our neopixels - 0 brightness and all red
+    pixels.setBrightness(255);
     pixels.begin();
     for (int i = 0; i < NUMPIXELS; i++) {
         // Red color
         pixels.setPixelColor(i, pixels.Color(255, 0, 0));
         pixels.show();
     }
-
-    setupBlueToothConnection();
 }
 
-enum class { NONE, RIGHT, LEFT } dirState;
 
-bool on = false;
 void loop() {
+    static bool on = false;
+	
     // Get the distace from the sensor
     const auto distance = ultrasonic.MeasureInCentimeters();
     const auto accel = icm20600.getAccelerationX();
@@ -103,6 +107,7 @@ void loop() {
                 i, pixels.Color(255, 0, 0)); // Moderately bright green color.
             pixels
                 .show(); // This sends the updated pixel color to the hardware.
+            pixels.setBrightness(255);
         }
         delay(1000);
         on = true;
@@ -120,14 +125,16 @@ void loop() {
         // 1024 Steps is 2pi radd
         if (recu == 'g') {
             motor.stepperRun(FULL_STEP, halfdist, rpm);
-            dirState = LEFT;
+            dirState = DIR::LEFT;
 
-            delay(1500);
+            delay(3500);
+            motor.stepperRun(FULL_STEP, -halfdist, rpm);
         } else if (recu == 'd') {
             motor.stepperRun(FULL_STEP, -halfdist, rpm);
-            dirState = RIGHT;
+            dirState = DIR::RIGHT;
 
-            delay(1500);
+            delay(3500);
+            motor.stepperRun(FULL_STEP, halfdist, rpm);
         }
     }
 
