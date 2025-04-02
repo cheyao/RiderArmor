@@ -88,7 +88,7 @@ void loop() {
     const auto distance = ultrasonic.MeasureInCentimeters();
     const auto accel = icm20600.getAccelerationX();
 
-    // Output the distance to the serial log
+    // Output the distance to the serial log (Debug)
     Serial.print(distance);
     Serial.println(" cm");
 
