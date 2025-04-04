@@ -85,7 +85,7 @@ void loop() {
     enum class DIR {
 	LEFT,
 	RIGHT
-    } dirsState;
+    } dirState;
 	
     static bool on = false;
 	
