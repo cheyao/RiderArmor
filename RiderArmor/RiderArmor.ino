@@ -82,6 +82,11 @@ void setup() {
 
 
 void loop() {
+    enum class DIR {
+	LEFT,
+	RIGHT
+    } dirsState;
+	
     static bool on = false;
 	
     // Get the distace from the sensor
