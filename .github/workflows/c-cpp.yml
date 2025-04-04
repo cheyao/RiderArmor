@@ -1,0 +1,12 @@
+name: C/C++ CI
+
+on: push
+jobs:
+  build:
+    name: Test compiling examples for Uno
+    runs-on: ubuntu-latest
+    steps:
+    - name: Checkout
+      uses: actions/checkout@v3
+    - name: Compile all examples
+      uses: ArminJo/arduino-test-compile@v3
