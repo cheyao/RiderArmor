@@ -12,3 +12,7 @@ jobs:
       uses: ArminJo/arduino-test-compile@v3
       with:
         build-properties: -std=c++1z
+    - uses: actions/upload-artifact@v4
+      with:
+        name: RiderArmor
+        path: ./RiderArmor
